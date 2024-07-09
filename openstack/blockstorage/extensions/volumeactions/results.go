@@ -224,3 +224,8 @@ type ReImageResult struct {
 type ResetStatusResult struct {
 	gophercloud.ErrResult
 }
+
+// MigrateResult contains the response error from a Migrate request.
+type MigrateResult struct {
+	gophercloud.ErrResult
+}

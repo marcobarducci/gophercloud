@@ -458,3 +458,37 @@ func ResetStatus(client *gophercloud.ServiceClient, id string, opts ResetStatusO
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
+
+// MigrateOptsBuilder allows extensions to add additional parameters to the
+// Migrate request.
+type MigrateOptsBuilder interface {
+	ToMigrateMap() (map[string]interface{}, error)
+}
+
+// MigrateOpts contains options for migrating a volume.
+type MigrateOpts struct {
+	// The ID of the host to which the volume is to be migrated.
+	Host string `json:"host" required:"true"`
+	// The force flag to enable migration of the volume even if the volume is attached to an instance.
+	ForceHostCopy bool `json:"force_host_copy,omitempty"`
+}
+
+// ToMigrateMap assembles a request body based on the contents of a MigrateOpts.
+func (opts MigrateOpts) ToMigrateMap() (map[string]interface{}, error) {
+	return gophercloud.BuildRequestBody(opts, "os-migrate_volume")
+}
+
+// Migrate will migrate a volume based on the values in MigrateOpts.
+func Migrate(client *gophercloud.ServiceClient, id string, opts MigrateOpts) (r MigrateResult) {
+	b, err := opts.ToMigrateMap()
+	if err != nil {
+		r.Err = err
+		return
+	}
+
+	resp, err := client.Post(actionURL(client, id), b, nil, &gophercloud.RequestOpts{
+		OkCodes: []int{202},
+	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	return
+}
